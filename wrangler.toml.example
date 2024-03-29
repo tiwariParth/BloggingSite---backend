@@ -1,0 +1,3 @@
+[vars]
+DATABASE_URL = "Your Connection Pool DB url"
+JWT_SECRET = "Your JWT_SECRET"
