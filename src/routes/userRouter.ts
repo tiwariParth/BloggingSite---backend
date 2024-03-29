@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { decode, sign, verify } from "hono/jwt";
+import { signinUser, signupUser } from "@tiwariparth/zod-test";
 
 const userRouter = new Hono<{
   Bindings: {
@@ -12,6 +13,13 @@ const userRouter = new Hono<{
 
 userRouter.post("/signup", async (c) => {
   const body = await c.req.json();
+  const { success } = await signupUser.safeParseAsync(body);
+  if (!success) {
+    c.status(400);
+    return c.json({
+      error: "Invalid data!",
+    });
+  }
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
@@ -45,6 +53,13 @@ userRouter.post("/signup", async (c) => {
 
 userRouter.post("/signin", async (c) => {
   const body = await c.req.json();
+  const { success } = await signinUser.safeParseAsync(body);
+  if (!success) {
+    c.status(400);
+    return c.json({
+      error: "Invalid data!",
+    });
+  }
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
