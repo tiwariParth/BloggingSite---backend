@@ -16,14 +16,13 @@ const blogRouter = new Hono<{
 
 blogRouter.use("/*", async (c, next) => {
   const authHeader = c.req.header("Authorization") || "";
-  try{
+  try {
     const user = await verify(authHeader, c.env?.JWT_SECRET);
     if (user) {
       c.set("userId", user.id);
       await next();
     }
-  }
-  catch (error) {
+  } catch (error) {
     c.status(401);
     return c.json({
       error: "Unauthorized",
@@ -139,7 +138,18 @@ blogRouter.get("/bulk", async (c) => {
   }).$extends(withAccelerate());
 
   try {
-    const blog = await prisma.post.findMany();
+    const blog = await prisma.post.findMany({
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        author: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
 
     c.status(201);
     return c.json({
